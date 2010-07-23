@@ -33,7 +33,7 @@ def _findCommunities(graph):
 	pajekf.close()
 	
 	# run the infomap binary and set up std in/out/err piping 
-	proc = subprocess.Popen("./infomap/infomap "+seed+" 10",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
+	proc = subprocess.Popen("./infomap-c-impl/infomap "+seed+" 10",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
 	
 	# send the pajek graph data to the infomap process and retrieve it's response via stdout and stderr 
 	com = proc.communicate(pajek) # com[0] is now stdout and com[1] is stderr
