@@ -3,4 +3,3 @@
 # Reya Group
 # Friday July 23rd 2010
 
-__all__ = ["constraint","infomap"]
