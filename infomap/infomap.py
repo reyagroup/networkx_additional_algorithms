@@ -11,7 +11,13 @@ import csv
 import StringIO
 import networkx as nx
 import random
+import sys
 
+def _getPathToBinary():
+	path = sys.modules[__name__].__file__
+	lastSlash = path.rfind("/")
+	return path[:lastSlash]+"/infomap-c-impl/infomap"
+	
 def _findCommunities(graph):
 	"""
 	Runs the infomap community detection algorithm on graph
@@ -32,12 +38,12 @@ def _findCommunities(graph):
 	pajek = pajekf.read()
 	pajekf.close()
 	
-	# run the infomap binary and set up std in/out/err piping 
-	proc = subprocess.Popen("./infomap-c-impl/infomap "+seed+" 10",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
+	# run the infomap binary and set up std in/out/err piping
+	proc = subprocess.Popen(_getPathToBinary()+" "+seed+" 10",shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE,stdin=subprocess.PIPE)
 	
-	# send the pajek graph data to the infomap process and retrieve it's response via stdout and stderr 
+	# send the pajek graph data to the infomap process and retrieve it's response via stdout and stderr
 	com = proc.communicate(pajek) # com[0] is now stdout and com[1] is stderr
-	
+		
 	# if anything gets written to stderr then there's a problem
 	if com[1]:
 		raise Exception(com[1])
