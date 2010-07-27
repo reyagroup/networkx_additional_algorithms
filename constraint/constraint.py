@@ -3,7 +3,7 @@ import networkx as nx
 import numpy
 import csv
 
-def _OLDproportionalTieStrength(A,Vi,i,j):
+def _proportionalTieStrength(A,Vi,i,j):
 	"""
 	Calculates P from Burt's equation
 	
@@ -12,25 +12,11 @@ def _OLDproportionalTieStrength(A,Vi,i,j):
 	i and j are two nodes in A
 	"""
 	num =  (A.item(i,j) + A.item(j,i))
-
 	denom = 0.0
 	for k in Vi:
 		if k==i: continue
 		denom += A.item(i,k) + A.item(k,i)
 	return num/denom
-
-def _calcProportionalTieStrengths(A):
-	"""
-	Calculates P from Burt's equation
-	
-	A is the adjacencey matrix
-	"""
-	num = A.copy()
-	num = num + num.transpose()
-
-	denom = num.sum(1)
-	denom = numpy.repeat(denom,len(num),axis=1)
-	return numpy.divide(num,denom)
 
 def _neighborsIndexes(graph,node,includeInLinks=False,includeOutLinks=True):
 	"""
@@ -57,12 +43,11 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 	wholeNetwork: whether to use the whole ego network for each node, or only the overlap between the current ego's network and the other's ego network
 	"""
 	
+	p = _proportionalTieStrength # mapping _proportionalTieStrength() to p() for convenience
+	
 	# get the adjacency matrix view of the graph
 	# which is a numpy matrix
 	A = nx.convert.to_numpy_matrix(graph)
-	
-	# p from Burt's equation
-	p = _calcProportionalTieStrengths(A)
 	
 	# this is the return value
 	constraints = {}
@@ -74,7 +59,7 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 		constraint = {"C-Index": 0.0 ,"C-Size": 0.0, "C-Density": 0.0, "C-Hierarchy": 0.0}
 		
 		# Vi is the set of i's neighbors
-		Vi = _neighborsIndexes(graph,node,includeOutLinks=includeOutLinks,includeInLinks=includeInLinks)
+		Vi = _neighborsIndexes(graph,node)
 		if len(Vi) == 0:
 			# isolates have no defined constraint
 			constraints[node] = None
@@ -85,21 +70,21 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 		i = graph.nodes().index(node)
 
 		for j in Vi:
-			Pij = p.item(i,j)
+			Pij = p(A,Vi,i,j)
 			constraint["C-Size"] += Pij ** 2
 			
 			innerSum = 0.0
 			for q in Vi:
 				if q == j or q == i: continue
-				# Vq = _neighborsIndexes(graph,graph.nodes()[q],includeInLinks=includeInLinks,includeOutLinks=includeOutLinks)
-				# if not wholeNetwork:
-				# 	Vq = set(Vq)
-				# 	ViSet = set(Vi)
-				# 	ViSet.add(i)
-				# 	Vq &= ViSet
+				Vq = _neighborsIndexes(graph,graph.nodes()[q])
+				if not wholeNetwork:
+					Vq = set(Vq)
+					ViSet = set(Vi)
+					ViSet.add(i)
+					Vq &= ViSet
 					
-				#innerSum += p(A,Vi,i,q) * p(A,Vq,q,j)
-				innerSum += p.item(i,q) * p.item(q,j)
+				innerSum += p(A,Vi,i,q) * p(A,Vq,q,j)
+			
 			constraint["C-Hierarchy"] += innerSum ** 2
 			constraint["C-Density"] += 2*Pij*innerSum
 		
