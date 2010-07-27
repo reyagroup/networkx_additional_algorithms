@@ -3,6 +3,19 @@ import networkx as nx
 import numpy
 import csv
 
+def _calcProportionalTieStrengths(A):
+	"""
+	Calculates P from Burt's equation
+
+	A is the adjacencey matrix
+	"""
+	num = A.copy()
+	num = num + num.transpose()
+
+	denom = num.sum(1)
+	denom = numpy.repeat(denom,len(num),axis=1)
+	return numpy.divide(num,denom)
+
 def _proportionalTieStrength(A,Vi,i,j):
 	"""
 	Calculates P from Burt's equation
