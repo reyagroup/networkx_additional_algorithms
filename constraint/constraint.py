@@ -3,6 +3,21 @@ import networkx as nx
 import numpy
 import csv
 
+def _proportionalTieStrength(A,Vi,i,j):
+	"""
+	Calculates P from Burt's equation
+	
+	A is the adjacencey matrix
+	Vi is a list of i' s neighbors as indexices in A
+	i and j are two nodes in A
+	"""
+	num =  (A.item(i,j) + A.item(j,i))
+	denom = 0.0
+	for k in Vi:
+		if k==i: continue
+		denom += A.item(i,k) + A.item(k,i)
+	return num/denom
+
 def _calcProportionalTieStrengths(A):
 	"""
 	Calculates P from Burt's equation
@@ -75,14 +90,15 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 			innerSum = 0.0
 			for q in Vi:
 				if q == j or q == i: continue
-				#Vq = _neighborsIndexes(graph,graph.nodes()[q])
-				#if not wholeNetwork:
-				#	Vq = set(Vq)
-				#	ViSet = set(Vi)
-				#	ViSet.add(i)
-				#	Vq &= ViSet
-					
-				innerSum += p[i,q] * p[q,j]
+				Vq = _neighborsIndexes(graph,graph.nodes()[q])
+				if not wholeNetwork:
+					Vq = set(Vq)
+					ViSet = set(Vi)
+					ViSet.add(i)
+					Vq &= ViSet
+					innerSum += p[i,q] * _proportionalTieStrength(A,Vq,q,j)
+				else:
+					innerSum += p[i,q] * p[q,j]
 			
 			constraint["C-Hierarchy"] += innerSum ** 2
 			constraint["C-Density"] += 2*Pij*innerSum
