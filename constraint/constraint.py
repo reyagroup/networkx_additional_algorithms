@@ -113,7 +113,3 @@ def writeConstraints(constraints,file):
 	for i in constraints:
 		writer.writerow([i,constraints[i]["C-Index"],constraints[i]["C-Size"],constraints[i]["C-Density"],constraints[i]["C-Hierarchy"]])
 	file.close
-
-#graph = nx.read_edgelist("adp_pajek.edgelist",create_using=nx.Graph())
-#constraints = calcConstraints(graph,wholeNetwork=False)
-#writeConstraints(constraints,"adp_constraints.csv")
