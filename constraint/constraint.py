@@ -39,7 +39,7 @@ def _calcProportionalTieStrengths(A):
 	denom = numpy.repeat(denom,len(num),axis=1)
 	return numpy.divide(num,denom)
 
-def _neighborsIndexes(graph,node,includeInLinks,includeOutLinks):
+def _neighborsIndexes(graph,node,includeOutLinks,includeInLinks):
 	"""
 	returns the neighbors of node in graph
 	as a list of their INDEXes within graph.node()
@@ -54,7 +54,7 @@ def _neighborsIndexes(graph,node,includeInLinks,includeOutLinks):
 		
 	return map(lambda x : graph.nodes().index(x),neighbors)
 
-def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork=True):
+def calcConstraints(graph,includeOutLinks=False,includeInLinks=True,wholeNetwork=True):
 	"""
 	Calculate Burt's constraint on each node in graph.
 	
@@ -81,7 +81,7 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 		constraint = {"C-Index": 0.0 ,"C-Size": 0.0, "C-Density": 0.0, "C-Hierarchy": 0.0}
 		
 		# Vi is the set of i's neighbors
-		Vi = _neighborsIndexes(graph,node,includeInLinks,includeOutLinks)
+		Vi = _neighborsIndexes(graph,node,includeOutLinks,includeInLinks)
 		if len(Vi) == 0:
 			# isolates have no defined constraint
 			constraints[node] = None
