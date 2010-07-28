@@ -31,7 +31,7 @@ def _calcProportionalTieStrengths(A):
 	denom = numpy.repeat(denom,len(num),axis=1)
 	return numpy.divide(num,denom)
 
-def _neighborsIndexes(graph,node,includeInLinks=False,includeOutLinks=True):
+def _neighborsIndexes(graph,node,includeInLinks,includeOutLinks):
 	"""
 	returns the neighbors of node in graph
 	as a list of their INDEXes within graph.node()
@@ -73,7 +73,7 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 		constraint = {"C-Index": 0.0 ,"C-Size": 0.0, "C-Density": 0.0, "C-Hierarchy": 0.0}
 		
 		# Vi is the set of i's neighbors
-		Vi = _neighborsIndexes(graph,node)
+		Vi = _neighborsIndexes(graph,node,includeInLinks,includeOutLinks)
 		if len(Vi) == 0:
 			# isolates have no defined constraint
 			constraints[node] = None
@@ -90,7 +90,7 @@ def calcConstraints(graph,includeInLinks=False,includeOutLinks=True,wholeNetwork
 			innerSum = 0.0
 			for q in Vi:
 				if q == j or q == i: continue
-				Vq = _neighborsIndexes(graph,graph.nodes()[q])
+				Vq = _neighborsIndexes(graph,graph.nodes()[q],includeInLinks,includeOutLinks)
 				if not wholeNetwork:
 					Vq = set(Vq)
 					ViSet = set(Vi)
