@@ -5,13 +5,6 @@ import networkx as nx
 import cPickle
 
 class TestSequenceFunctions(unittest.TestCase):
-
-	def assertWithin(self,x,y,e):
-		"""
-		Ensure x is within e of y
-		"""
-		
-		self.assertTrue(abs(x-y)<e)
 		
 	def setUp(self):
 		self.undirected = nx.read_edgelist("adp.edgelist",create_using=nx.Graph())		
@@ -25,7 +18,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		
 		for node in constraints:
 			for entry in constraints[node]:
-				self.assertWithin(constraints[node][entry],expected[node][entry],0.000000001)
+				self.assertAlmostEqual(constraints[node][entry],expected[node][entry])
 				
 	def test_undirected_constraints_ego(self):
 		f = open("adp_constraints_ego.pickle","r")
@@ -36,7 +29,7 @@ class TestSequenceFunctions(unittest.TestCase):
 
 		for node in constraints:
 			for entry in constraints[node]:
-				self.assertWithin(constraints[node][entry],expected[node][entry],0.000000001)
+				self.assertAlmostEqual(constraints[node][entry],expected[node][entry])
 
 if __name__ == '__main__':
 	unittest.main()
