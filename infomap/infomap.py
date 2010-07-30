@@ -80,8 +80,7 @@ def findCommunities(graph):
 	
 	graph: a networkx Graph
 	
-	returns: nothing. Each of graph's node's data dictionaries 
-	will have an entry "community" that describes which community that node is in
+	returns: a dictionary mapping each node --> it's community
 	"""
 	
 	# get the output from infomap.cc
@@ -93,15 +92,9 @@ def findCommunities(graph):
 	stream = StringIO.StringIO(com[0])
 	reader = csv.DictReader(stream,delimiter="\t")
 	
-	# networkx.Graph.node() returns a list, but we need random access to
-	# the nodes by name so build a dict indexed by nodes with each node's 
-	# 'data' dict for values
-	nodesDict = {}
-	nodesAndData = graph.nodes(data=True)
-	for entry in nodesAndData:
-		nodesDict[entry[0]]=entry[1]
-		
-	# use aforementioned dictionary to fill the community information into
-	# each of graph's nodes's 'data' dictiionaries
+	# build a dictionary mapping node to community and return it
+	communities = {}
 	for node in reader:
-		nodesDict[node["name"]]["community"] = node["module"]
+		communities[node["name"]] = node["module"]
+
+	return communities
