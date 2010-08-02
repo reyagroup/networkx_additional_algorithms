@@ -3,7 +3,6 @@
 # Reya Group
 # Friday July 30th 2010
 
-
 def tanimoto(a,b):
 	"""
 	returns the similarity between sets a and b
