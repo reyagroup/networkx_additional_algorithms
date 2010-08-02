@@ -3,58 +3,76 @@
 # Reya Group
 # Friday July 30th 2010
 
-def tanimoto(a,b):
+def _tanimoto(a,b):
 	"""
-	returns the similarity between sets a and b
+	returns the similarity between sets a and b,
+	between 0 and 1
 	"""
 	c = [v for v in a if v in b]
 	return float(len(c))/(len(a)+len(b)-len(c))
 
-def printSummary(trials):
-	for t1 in xrange(len(trials)):
-		for t2 in xrange(t1+1,len(trials)):
-			for com1 in trials[t1].values():
-				sims = []
-				for com2 in trials[t2].values():
-					similarity = tanimoto(com1,com2)
-					sims.append(similarity)
-			if max(sims) < 0.99999999999:
-				print "could not find a match for: " + str(com1) + str(max(sims))
-
-def electRep(lyst):
+def _findBestRepresentative(lyst):
+	"""
+	returns the element that 'best represents' lyst as a whole,
+	meaning the element with maximum tanimoto between itself and
+	all other elements in lyst
+	"""
 	bestScore = 0.0
 	bestCandidate = None
 	for candidate in lyst:
 		score = 0.0
 		for cet in lyst:
 			if cet is candidate: continue
-			score += tanimoto(candidate,cet)
+			score += _tanimoto(candidate,cet)
 		if score > bestScore:
 			bestScore = score
 			bestCandidate = candidate
 	return bestCandidate
 
-def addByRep(superclasses,cet,threshold):
+def _classify(superclasses,cet,threshold):
+	"""
+	Places cet into superclasses by choosing which superclass cet best fits into
+	If cet does not fit into any superclass within the given threshold, cet is deemed
+	ad new superclass and added to superclasses as such
+	"""
 	best = 0.0
 	bestEntry = None
 	for entry in superclasses:
 		rep,lyst = entry
-		score = tanimoto(rep,cet)
+		score = _tanimoto(rep,cet)
 		if score > best:
 			best = score
 			bestEntry = entry
 	if best > threshold:
 		bestEntry[1].append(cet)
-		newRep = electRep(bestEntry[1])
+		newRep = _findBestRepresentative(bestEntry[1])
 		bestEntry[0] = newRep
 	else:
 		superclasses.append([cet,[cet]])
 
-def findAgreementIn(trials,setSimilarityThreshold=0.8,voteThreshold=0.8):
+def findAgreementIn(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFullHistogram=False):
+	"""
+	Finds 'agreement' amongst a series of 'trials'
+	More specifically, given:
+	
+		trials: a list of lists of sets, each list of sets representing a single trial
+
+		setSimilarityThreshold: The tanimoto score required to consider two sets 'close enough to equal' or in the same 'super-class'
+
+		voteThreshold: The percentage of trials that must 'agree' for a set to be considered a member of the return value
+	
+	returns a list of sets which voteThreshold percent of the trials contained, or rather contained within setSimililarityThreshold
+	
+	A 'representative' will be chosen for each super-class, and it will be the set that is present in the return value.
+	It is the one which has the highest similarity to all the other sets in it's super-class
+	
+	if returnFullHistogram is set to True, then voteThreshold will be ignored and a list of tuples will be returned
+	in the form, for every super-class, (super-class representative, number of sets in this super-class)
+	"""
 	superclasses = []
 	for trial in trials:
 		for cet in trial.values():
-			addByRep(superclasses,cet,setSimilarityThreshold)
+			_classify(superclasses,cet,setSimilarityThreshold)
 
 	histogram = map(lambda x: (x[0],len(x[1])),superclasses)
 	histogram.sort(lambda x,y: y[1]-x[1])
