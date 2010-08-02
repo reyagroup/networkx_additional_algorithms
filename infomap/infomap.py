@@ -74,13 +74,14 @@ def writeCommunities(graph,file):
 	file.write(com[0])
 	file.close
 
-def findCommunities(graph):
+def findCommunities(graph,partitionOnly=True):
 	"""
 	Runs the infomap community detection algorithm on graph
 	
 	graph: a networkx Graph
 	
-	returns: a dictionary mapping each node --> it's community
+	returns: a dictionary mapping each node --> it's community,
+			 and a list of lists of nodes in each community if partitionOnly is False
 	"""
 	
 	# get the output from infomap.cc
@@ -93,8 +94,13 @@ def findCommunities(graph):
 	reader = csv.DictReader(stream,delimiter="\t")
 	
 	# build a dictionary mapping node to community and return it
+	partition = {}
 	communities = {}
 	for node in reader:
-		communities[node["name"]] = node["module"]
+		if not partitionOnly:
+			if node["module"] not in communities: communities[node["module"]] = []
+			communities[node["module"]].append(node["name"])
+		partition[node["name"]] = node["module"]
 
-	return communities
+	if partitionOnly: return partition
+	return partition,communities
