@@ -127,4 +127,4 @@ def writeConstraints(constraints,file):
 	writer.writerow(["Node","Constraint","C-Size","C-Density","C-Hierarchy"])
 	for i in constraints:
 		writer.writerow([i,constraints[i]["C-Index"],constraints[i]["C-Size"],constraints[i]["C-Density"],constraints[i]["C-Hierarchy"]])
-	file.close
+	file.close()
