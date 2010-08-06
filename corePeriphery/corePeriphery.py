@@ -134,7 +134,7 @@ def _simpleCorrelationToIdeal(A,bitPartition):
 	"""
 	
 	# NOTE: should we include some idea of value/weighted?
-	
+
 	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
 	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
 	z = a + b
