@@ -1,8 +1,14 @@
-#!nodens-python
 # Alex Levenson
 # nosnevelxela@gmail.com
 # Reya Group
 # Thursday July 29th 2010
+
+# simple discrete core periphery partitioner, based on the paper:
+# Computing Core/Periphery Structures and Permutation Tests for Social Relations Data
+#                                        by
+#               John P. Boyd†, William J. Fitzgerald, and Robert J. Beck
+#                  University of California at Irvine, CA 92697, USA
+
 
 import random
 import networkx as nx
