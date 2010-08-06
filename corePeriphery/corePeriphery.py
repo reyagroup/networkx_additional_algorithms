@@ -26,7 +26,6 @@ def _kernighanLinOptimizer(A,C=None,numIterations=3):
 		print _simpleCorrelationToIdeal(A,C)
 
 	for t in xrange(numIterations):
-		print "on iteration: " + str(t)
 		CTentative = C.copy()
 		unlockedNodes = range(len(A))
 		gk = []
@@ -77,4 +76,4 @@ def _simpleCorrelationToIdeal(A,C):
 	z = a + b
 	Cmask = numpy.divide(z,z)
 	
-	return = numpy.multiply(A,Cmask).sum()
+	return numpy.multiply(A,Cmask).sum()
