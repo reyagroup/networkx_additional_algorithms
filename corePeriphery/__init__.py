@@ -3,4 +3,4 @@
 # Reya Group
 # Thursday July 29th 2010
 
-from corePeriphery import *
+from corePeriphery import partition
