@@ -59,6 +59,7 @@ def _kernighanLinOptimizer(A,bitPartition,numIterations):
 	core / periphery matrix
 	"""
 	for t in xrange(numIterations):
+		print "Running iteration " + str(t+1)
 		# need a place to store tentative swaps
 		tentativePartition = bitPartition.copy()
 		
