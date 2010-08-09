@@ -79,10 +79,10 @@ def _kernighanLinOptimizer(A,bitPartition,numIterations):
 			
 			# find the best node left to swap
 			currentScore = _simpleCorrelationToIdeal(A,tentativePartition)
-			bestGain = _gainDelta(A,unlockedNodes[0],tentativePartition,currentScore)
+			bestGain = _gainDelta(A,unlockedNodes[0],tentativePartition)
 			bestNode = unlockedNodes[0]			
 			for n in unlockedNodes:
-				gain = _gainDelta(A,n,tentativePartition,currentScore)
+				gain = _gainDelta(A,n,tentativePartition)
 				if gain > bestGain: 
 					bestGain = gain
 					bestNode = n
@@ -113,16 +113,18 @@ def _kernighanLinOptimizer(A,bitPartition,numIterations):
 	return bitPartition
 
 		
-def _gainDelta(A,a,bitPartition,current):
+def _gainDelta(A,a,bitPartition):
 	"""
 	calculates the net gain achieved by swapping node a
 	from core to periphery or vice versa
-	"""
-	bitPartition[a] = (bitPartition[a]+1)%2
-	new = _simpleCorrelationToIdeal(A,bitPartition)
-	bitPartition[a] = (bitPartition[a]+1)%2
-	return new-current
-
+	"""	
+	aRow = A[a]
+	aCol = A[:,a].transpose()
+	mask = (bitPartition+1)%2
+	d = numpy.multiply(mask,aRow).sum() + numpy.multiply(mask,aCol).sum()
+	if bitPartition[a]==1: d = -1 * d
+	return d
+	
 def _simpleCorrelationToIdeal(A,bitPartition):
 	"""
 	Calculates how close to ideal A is in terms of
@@ -130,7 +132,7 @@ def _simpleCorrelationToIdeal(A,bitPartition):
 	
 	A higher score is better
 	
-	Not normalized, meaning bigger matrices will tend towards higher scores
+	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
 	"""
 	
 	# NOTE: should we include some idea of value/weighted?
