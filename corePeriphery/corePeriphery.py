@@ -122,8 +122,7 @@ def _gainDelta(A,a,bitPartition):
 	aCol = A[:,a].transpose()
 	mask = (bitPartition+1)%2
 	d = numpy.multiply(mask,aRow).sum() + numpy.multiply(mask,aCol).sum()
-	if bitPartition[a]==1: d = -1 * d
-	return d
+	return d if bitPartition[a]==0 else -d
 	
 def _simpleCorrelationToIdeal(A,bitPartition):
 	"""
