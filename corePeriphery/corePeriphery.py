@@ -13,119 +13,87 @@
 import random
 import networkx as nx
 import numpy
+from geneticOptimizer import *
 
-def partition(graph,partition=None,numIterations=3):
+class CorePeripheryOptimizer(GeneticOptimizer):
+	def __init__(self,A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate):
+		GeneticOptimizer.__init__(self,populationSize,survivalRate,maxGenerations,mutateVsBreedRate)
+		self.A = A
+		
+	def generateInitialPopulation(self):
+		return [numpy.random.randint(0,2,size=len(self.A)) for i in xrange(self.populationSize)]
+		
+	def mutate(self,dna):
+		i = random.randint(0,len(dna)-1)
+		m = dna.copy()
+		m[i] = (m[i] + 1)%2
+		return m
+		
+	def breed(self,dna1,dna2):
+		l = min(map(len,[dna1,dna2])) 
+		mask = [random.randint(0,1) for i in xrange(l)]
+		src = (dna1,dna2)
+		child = numpy.empty_like(dna1)
+		for i in xrange(l):
+			child[i] = src[mask[i]][i]
+		return child
+		
+	def getScore(self,dna):
+		#return _simpleCorrelationToIdeal(self.A,dna)
+		return _betterCorrelation(self.A,dna)
+		
+	def statusReport(self,g,score):
+		print (g,score)
+
+def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5):
 	"""
 	Partitions graph into a core set and a periphery set
-	using a simple optimizer
+	using a genetic optimizer
 	
 	graph: a networkx graph
-	
-	partition: optionally supply a starting partition as a 
-	dictionary mapping node->{0,1} (0 for periphery, 1 for core)
-	Must be at least one node in each partition
-	
-	numIterations: how many times to run the optimizer, should be around 2 to five, probably not many more
+	populationSize, survivalRate,maxGenerations,mutateVsBreedRate: see geneticOptimizer.py
 	
 	returns: a dictionary mapping node->{0,1} (0 for periphery, 1 for core)
 	"""
 	
-	A = nx.convert.to_numpy_matrix(graph)	
-	
-	if partition:
-		# convert the dictionary partition into a bit array
-		bitPartition = numpy.zeroes(len(A))
-		for node,value in partition.iteritems():
-			bitPartition[graph.nodes().index(node)] = int(value)
-	else:
-		# create a random partition of the graph into core / periphery
-		# 0 for periphery, 1 for core
-		bitPartition = numpy.random.randint(0,2,size=len(A))
-		# force at least one in each partition
-		bitPartition[0] = 0
-		bitPartition[1] = 1
-		
-	bitPartition = _kernighanLinOptimizer(A,bitPartition,numIterations)
-	
+	A = nx.convert.to_numpy_matrix(graph)
+	opt = CorePeripheryOptimizer(A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate)
+	best = opt.optimize()
+
 	# convert the numpy array to a dictionary
 	partition = {}
 	for node in graph.nodes():
-		partition[node] = bitPartition[graph.nodes().index(node)]
+		partition[node] = best[graph.nodes().index(node)]
 	return partition
 	
-def _kernighanLinOptimizer(A,bitPartition,numIterations):
+def naiveOptimizer(graph,steps=10000):
 	"""
-	Simple optimizer that tries to optimize similarity to the ideal
-	core / periphery matrix
-	"""
-	for t in xrange(numIterations):
-		print "Running iteration " + str(t+1)
-		# need a place to store tentative swaps
-		tentativePartition = bitPartition.copy()
-		
-		# set all nodes to unlocked
-		unlockedNodes = range(len(A))
-		
-		# gains[i] holds the net gain for applying swaps 0 through i
-		gains = []
-		cumulativeGain = 0
-		
-		# tentativePartitions[i] holds the partion after swaps 0 through i have been applied
-		# TODO: quite memory inefficient... is there a better way to do this? (yes there is)
-		tentativePartitions = []
-		
-		# swap each node from it's current partition, in order of
-		# best net gain, keeping track of net gain as we go
-		while len(unlockedNodes) > 0:
-			
-			# find the best node left to swap
-			currentScore = _simpleCorrelationToIdeal(A,tentativePartition)
-			bestGain = _gainDelta(A,unlockedNodes[0],tentativePartition)
-			bestNode = unlockedNodes[0]			
-			for n in unlockedNodes:
-				gain = _gainDelta(A,n,tentativePartition)
-				if gain > bestGain: 
-					bestGain = gain
-					bestNode = n
-			
-			# best node to swap found, perform the swap
-			tentativePartition[bestNode] = (tentativePartition[bestNode]+1)%2
-			unlockedNodes.remove(bestNode)
-			
-			# keep track of cumulativeGain thus far and save the current tentative
-			cumulativeGain += bestGain
-			gains.append(cumulativeGain)
-			tentativePartitions.append(tentativePartition.copy())
+	Partitions graph into a core set and a periphery set
+	using the worst optimizer (random explorer). All other methods should outperform this one.
 	
-		# Now swaps 0...K...len(A) have been performed,
-		# now we need to find K, such that the sum of the gains
-		# from swaps 0...K is highest 
-		bestGain = max(gains)
-		
-		if bestGain > 0:
-			# Make the tentative swaps from 0 to K permanent swaps
-			bestK = gains.index(max(gains))
-			bitPartition = tentativePartitions[bestK]
-		else:
-			# if bestGain is negative then we're not going
-			# to find anything better using this algorithm
-			return bitPartition
-
-	return bitPartition
-
-		
-def _gainDelta(A,a,bitPartition):
-	"""
-	calculates the net gain achieved by swapping node a
-	from core to periphery or vice versa
-	"""	
-	aRow = A[a]
-	aCol = A[:,a].transpose()
-	mask = (bitPartition+1)%2
-	d = numpy.multiply(mask,aRow).sum() + numpy.multiply(mask,aCol).sum()
-	return d if bitPartition[a]==0 else -d
+	graph: a networkx graph
+	steps: how many solutions to explore
 	
-def _simpleCorrelationToIdeal(A,bitPartition):
+	returns: a dictionary mapping node->{0,1} (0 for periphery, 1 for core)
+	"""
+	A = nx.convert.to_numpy_matrix(graph)	
+
+	best = numpy.random.randint(0,2,size=len(A))
+	bestScore = _betterCorrelation(A,best)
+	for t in xrange(steps):
+		bitPartition = numpy.random.randint(0,2,size=len(A))
+		score = _betterCorrelation(A,bitPartition)
+		if score > bestScore:
+			bestScore = score
+			best = bitPartition.copy()
+
+	# convert the numpy array to a dictionary
+	partition = {}
+	for node in graph.nodes():
+		partition[node] = best[graph.nodes().index(node)]
+	return partition
+	
+def _betterCorrelation(A,bitPartition):
 	"""
 	Calculates how close to ideal A is in terms of
 	being a core / periphery structure
@@ -134,12 +102,34 @@ def _simpleCorrelationToIdeal(A,bitPartition):
 	
 	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
 	"""
-	
-	# NOTE: should we include some idea of value/weighted?
-
 	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
 	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
-	z = a + b
-	bitPartitionmask = numpy.divide(z,z)
+	core_core_mask = numpy.bitwise_and(a,b)
+	periph_periph_mask = numpy.bitwise_and((a+1)%2,(b+1)%2)
+
+	diff = numpy.multiply(A,core_core_mask)
+	diff = diff - core_core_mask
+	diff = numpy.multiply(diff,diff)
+	lostPoints = diff.sum()	
 	
-	return numpy.multiply(A,bitPartitionmask).sum()
+	
+	diff = numpy.multiply(A,periph_periph_mask)
+	lostPoints += diff.sum()
+
+	return len(a)**2 - lostPoints
+	
+def _simpleCorrelation(A,bitPartition):
+	"""
+	Calculates how close to ideal A is in terms of
+	being a core / periphery structure
+	
+	A higher score is better
+	
+	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
+	"""
+	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
+	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
+	involves_core_mask = numpy.bitwise_or(a,b)
+	diff = A - involves_core_mask
+	diff = numpy.multiply(diff,diff)
+	return len(A)**2 - (diff.sum())	
