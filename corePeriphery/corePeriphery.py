@@ -18,10 +18,10 @@ from geneticOptimizer import *
 # need to fill in the implementation details for the generic optimizer
 # see GeneticOptimizer for details
 class CorePeripheryOptimizer(GeneticOptimizer):
-	def __init__(self,A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable,correlationFunction):
+	def __init__(self,A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable,correlationMode):
 		GeneticOptimizer.__init__(self,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable)
 		self.A = A
-		self.correlation = correlationFunction
+		self.correlationMode = correlationMode
 		
 	def generateInitialPopulation(self):
 		return [numpy.random.randint(0,2,size=len(self.A)) for i in xrange(self.populationSize)]
@@ -49,97 +49,55 @@ class CorePeripheryOptimizer(GeneticOptimizer):
 		return child
 				
 	def getScore(self,dna):
-		return self.correlation(self.A,dna)
+		return _correlationToIdeal(self.A,dna,self.correlationMode)
 		
 	def statusReport(self,g,scores):
 		print (g,scores[0][0])
 
-def _correlationUseIsolateModel(A,bitPartition):
+def _correlationToIdeal(A,bitPartition,mode):
 	"""
 	Calculates how close to ideal A is in terms of
 	being a core / periphery structure
 	
 	A higher score is better
 	
-	Scored on:
-		Core-Core ties
-		Lack of Periph-Periph ties
-		Lack of Core-Periph / Periph-Core ties
+	A: adjacency matrix of the graph
+	bitPartition: array of 1s and 0s representing the partition of nodes into core / periphery
 	
-	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
-	"""	
-	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
-	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
-	core_core_mask = numpy.bitwise_and(a,b)
-	periph_periph_mask = numpy.bitwise_and((a+1)%2,(b+1)%2)
-	involves_periph_mask = numpy.bitwise_or((a+1)%2,(b+1)%2)
-
-	diff = numpy.multiply(A,core_core_mask)
-	diff = diff - core_core_mask
-	diff = numpy.multiply(diff,diff)
-	lostPoints = diff.sum()	
+	core_core: weight for core to core connections
+	core_periphery: weight for core to periphery and periphery to core connections
+	periphery_periphery: weight for periphery to periphery connections
 	
-	diff = numpy.multiply(A,periph_periph_mask)
-	lostPoints += diff.sum()
-
-	diff = numpy.multiply(A,involves_periph_mask)
-	lostPoints += diff.sum()
-
-	return len(a)**2 - lostPoints	
+	positive weights mean this connection type is good, negative weights mean this connect type is bad,
+	and zero weights mean ignore this type of connection
 	
-	
-def _correlationIgnoreCorePeriphTies(A,bitPartition):
-	"""
-	Calculates how close to ideal A is in terms of
-	being a core / periphery structure
-	
-	A higher score is better
-	
-	Scored on:
-		Core-Core ties
-		Lack of Periph-Periph ties
-	
-	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
+	Not normalized
 	"""
 	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
 	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
 	core_core_mask = numpy.bitwise_and(a,b)
-	periph_periph_mask = numpy.bitwise_and((a+1)%2,(b+1)%2)
-
-	diff = numpy.multiply(A,core_core_mask)
-	diff = diff - core_core_mask
-	diff = numpy.multiply(diff,diff)
-	lostPoints = diff.sum()	
+	core_periph_mask = numpy.bitwise_xor(a,b)
+	periph_periph_mask = numpy.bitwise_or(a,b)
+	periph_periph_mask = (periph_periph_mask+1)%2
 	
+	masks_and_weights = ((core_core_mask,mode[0]), \
+						(core_periph_mask,mode[1]), \
+						(periph_periph_mask,mode[2]))
+	score = 0
+	for mask,weight in masks_and_weights:
+		if weight == 0:
+			continue
+		elif weight > 0:
+			# we're looking for ones within the mask region
+			score += numpy.multiply(A,mask).sum()
+		else:
+			# we're looking for zeros within the mask region
+			# mask.sum() is the number of zeroes there could be
+			# so we just subtract the number of ones that were found
+			score += mask.sum() - numpy.multiply(A,mask).sum()
+	return score
 	
-	diff = numpy.multiply(A,periph_periph_mask)
-	lostPoints += diff.sum()
-
-	return len(a)**2 - lostPoints
-	
-def _correlationIncludeCorePeriphTies(A,bitPartition):
-	"""
-	Calculates how close to ideal A is in terms of
-	being a core / periphery structure
-	
-	A higher score is better
-	
-	Scored on:
-		Core-Core ties
-		Lack of Periph-Periph ties
-		Core-Periph / Periph-Core ties
-	
-	Not normalized, meaning bigger matrices will tend towards higher scores (I think)
-	"""
-	a = numpy.repeat(numpy.matrix(bitPartition),len(bitPartition),axis=0)
-	b = numpy.repeat(numpy.matrix(bitPartition).transpose(),len(bitPartition),axis=1)
-	involves_core_mask = numpy.bitwise_or(a,b)
-	diff = A - involves_core_mask
-	diff = numpy.multiply(diff,diff)
-	return len(A)**2 - (diff.sum())
-
-
-def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,correlationFunction=_correlationIgnoreCorePeriphTies):
+def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,core_core=1,core_periphery=0,periphery_periphery=-1):
 	"""
 	Partitions graph into a core set and a periphery set
 	using a genetic optimizer
@@ -151,7 +109,7 @@ def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,muta
 	"""
 	
 	A = nx.convert.to_numpy_matrix(graph)
-	opt = CorePeripheryOptimizer(A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable,correlationFunction)
+	opt = CorePeripheryOptimizer(A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable,(core_core,core_periphery,periphery_periphery))
 	best = opt.optimize()
 
 	# convert the numpy array to a dictionary
@@ -160,7 +118,7 @@ def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,muta
 		partition[node] = best[graph.nodes().index(node)]
 	return partition
 	
-def naiveOptimizer(graph,steps=10000,correlationFunction=_correlationIgnoreCorePeriphTies):
+def naiveOptimizer(graph,steps=10000,correlationFunction=_correlationToIdeal):
 	"""
 	Partitions graph into a core set and a periphery set
 	using the worst optimizer (random explorer). All other methods should outperform this one.
