@@ -15,6 +15,8 @@ import networkx as nx
 import numpy
 from geneticOptimizer import *
 
+# need to fill in the implementation details for the generic optimizer
+# see GeneticOptimizer for details
 class CorePeripheryOptimizer(GeneticOptimizer):
 	def __init__(self,A,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable,correlationFunction):
 		GeneticOptimizer.__init__(self,populationSize,survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable)
@@ -25,25 +27,32 @@ class CorePeripheryOptimizer(GeneticOptimizer):
 		return [numpy.random.randint(0,2,size=len(self.A)) for i in xrange(self.populationSize)]
 		
 	def mutate(self,dna):
+		# swap one node from core to perip or vice versa
 		i = random.randint(0,len(dna)-1)
 		m = dna.copy()
 		m[i] = (m[i] + 1)%2
 		return m
 		
 	def breed(self,dna1,dna2):
-		l = min(map(len,[dna1,dna2])) 
-		mask = [random.randint(0,1) for i in xrange(l)]
+		# for each node in dna1 and dna2,
+		# randomly choose which parent to take
+		# each node from
+		if len(dna1) > len(dna2):
+			dna1,dna2 = dna2,dna1
+		
 		src = (dna1,dna2)
 		child = numpy.empty_like(dna1)
-		for i in xrange(l):
-			child[i] = src[mask[i]][i]
+		for i in xrange(len(dna1)):
+			child[i] = src[random.randint(0,1)][i]
+		for i in xrange(len(dna2)-len(dna1)):
+			child[i+len(dna1)] = dna2[i+len(dna1)]
 		return child
-		
+				
 	def getScore(self,dna):
 		return self.correlation(self.A,dna)
 		
-	def statusReport(self,g,score):
-		print (g,score)
+	def statusReport(self,g,scores):
+		print (g,scores[0][0])
 
 def _correlationUseIsolateModel(A,bitPartition):
 	"""
