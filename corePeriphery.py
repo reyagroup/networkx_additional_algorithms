@@ -97,7 +97,7 @@ def _correlationToIdeal(A,bitPartition,mode):
 			score += mask.sum() - numpy.multiply(A,mask).sum()
 	return score
 	
-def partition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,core_core=1,core_periphery=0,periphery_periphery=-1):
+def partitionIntoCorePeriphery(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,core_core=1,core_periphery=0,periphery_periphery=-1):
 	"""
 	Partitions graph into a core set and a periphery set
 	using a genetic optimizer

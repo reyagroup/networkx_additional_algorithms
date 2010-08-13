@@ -7,10 +7,10 @@ import cPickle
 class TestSequenceFunctions(unittest.TestCase):
 		
 	def setUp(self):
-		self.undirected = nx.read_edgelist("adp.edgelist",create_using=nx.Graph())		
+		self.undirected = nx.read_edgelist("unit test data/adp.edgelist",create_using=nx.Graph())		
 
 	def test_undirected_constraints_whole(self):
-		f = open("adp_constraints_whole.pickle","r")
+		f = open("unit test data/adp_constraints_whole.pickle","r")
 		expected = cPickle.load(f)
 		f.close()
 		
@@ -21,7 +21,7 @@ class TestSequenceFunctions(unittest.TestCase):
 				self.assertAlmostEqual(constraints[node][entry],expected[node][entry])
 				
 	def test_undirected_constraints_ego(self):
-		f = open("adp_constraints_ego.pickle","r")
+		f = open("unit test data/adp_constraints_ego.pickle","r")
 		expected = cPickle.load(f)
 		f.close()
 
