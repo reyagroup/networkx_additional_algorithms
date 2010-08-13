@@ -4,6 +4,7 @@
 # Tuesday August 10th 2010
 
 # A generic genetic optimizer
+# Based on code found in Toby Segaran's book Collective Intelligence
 
 import random
 from math import ceil

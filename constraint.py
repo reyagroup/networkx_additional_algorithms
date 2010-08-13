@@ -61,7 +61,7 @@ def _neighborsIndexes(graph,node,includeOutLinks,includeInLinks):
 		
 	return map(lambda x : graph.nodes().index(x),neighbors)
 
-def calcConstraints(graph,includeOutLinks=False,includeInLinks=True,wholeNetwork=True):
+def getConstraints(graph,includeOutLinks=True,includeInLinks=False,wholeNetwork=True):
 	"""
 	Calculate Burt's constraint on each node in graph.
 	
@@ -121,6 +121,11 @@ def calcConstraints(graph,includeOutLinks=False,includeInLinks=True,wholeNetwork
 	return constraints
 
 def writeConstraints(constraints,file):
+	"""
+	Writes constraints to file in CSV format
+	
+	file: a file object or a filepath
+	"""
 	file = nx.utils._get_fh(file, mode='w')
 
 	writer = csv.writer(file)

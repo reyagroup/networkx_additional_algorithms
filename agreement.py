@@ -3,7 +3,9 @@
 # Reya Group
 # Friday July 30th 2010
 
-def _tanimoto(a,b):
+# Usefull methods for finding set similarity, entries that best represent a list, and agreement between multiple "trials"
+
+def tanimoto(a,b):
 	"""
 	returns the similarity between sets a and b,
 	between 0 and 1
@@ -11,7 +13,7 @@ def _tanimoto(a,b):
 	c = [v for v in a if v in b]
 	return float(len(c))/(len(a)+len(b)-len(c))
 
-def _findBestRepresentative(lyst):
+def getBestRepresentative(lyst):
 	"""
 	returns the element that 'best represents' lyst as a whole,
 	meaning the element with maximum tanimoto between itself and
@@ -23,7 +25,7 @@ def _findBestRepresentative(lyst):
 		score = 0.0
 		for cet in lyst:
 			if cet is candidate: continue
-			score += _tanimoto(candidate,cet)
+			score += tanimoto(candidate,cet)
 		if score > bestScore:
 			bestScore = score
 			bestCandidate = candidate
@@ -39,18 +41,18 @@ def _classify(superclasses,cet,threshold):
 	bestEntry = None
 	for entry in superclasses:
 		rep,lyst = entry
-		score = _tanimoto(rep,cet)
+		score = tanimoto(rep,cet)
 		if score > best:
 			best = score
 			bestEntry = entry
 	if best > threshold:
 		bestEntry[1].append(cet)
-		newRep = _findBestRepresentative(bestEntry[1])
+		newRep = getBestRepresentative(bestEntry[1])
 		bestEntry[0] = newRep
 	else:
 		superclasses.append([cet,[cet]])
 
-def findAgreementIn(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFullHistogram=False):
+def findAgreementBetween(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFullHistogram=False):
 	"""
 	Finds 'agreement' amongst a series of 'trials'
 	More specifically, given:
@@ -77,9 +79,11 @@ def findAgreementIn(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFu
 	histogram = map(lambda x: (x[0],len(x[1])),superclasses)
 	histogram.sort(lambda x,y: y[1]-x[1])
 	
-	l = float(len(trials))
-	for cet in xrange(len(histogram)):
-		if (histogram[cet][1] / l) < voteThreshold: break
+	if not returnFullHistogram:
+		l = float(len(trials))
+		for cet in xrange(len(histogram)):
+			if (histogram[cet][1] / l) < voteThreshold: break
+		del histogram[cet:]
+		return map(lambda x: x[0],histogram)
 	
-	del histogram[cet:]
-	return map(lambda x: x[0],histogram)
+	return histogram

@@ -14,7 +14,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		expected = cPickle.load(f)
 		f.close()
 		
-		constraints = constraint.calcConstraints(self.undirected,True,False,True)
+		constraints = constraint.getConstraints(self.undirected,True,False,True)
 		
 		for node in constraints:
 			for entry in constraints[node]:
@@ -25,7 +25,7 @@ class TestSequenceFunctions(unittest.TestCase):
 		expected = cPickle.load(f)
 		f.close()
 
-		constraints = constraint.calcConstraints(self.undirected,True,False,False)
+		constraints = constraint.getConstraints(self.undirected,True,False,False)
 
 		for node in constraints:
 			for entry in constraints[node]:

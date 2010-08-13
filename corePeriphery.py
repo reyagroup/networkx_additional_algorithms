@@ -13,7 +13,7 @@
 import random
 import networkx as nx
 import numpy
-from geneticOptimizer import *
+from geneticoptimizer import *
 
 # need to fill in the implementation details for the generic optimizer
 # see GeneticOptimizer for details
@@ -64,6 +64,7 @@ def _correlationToIdeal(A,bitPartition,mode):
 	A: adjacency matrix of the graph
 	bitPartition: array of 1s and 0s representing the partition of nodes into core / periphery
 	
+	mode: a 3 tuple containing, in order:
 	core_core: weight for core to core connections
 	core_periphery: weight for core to periphery and periphery to core connections
 	periphery_periphery: weight for periphery to periphery connections
@@ -96,14 +97,29 @@ def _correlationToIdeal(A,bitPartition,mode):
 			# so we just subtract the number of ones that were found
 			score += mask.sum() - numpy.multiply(A,mask).sum()
 	return score
+
+def correlationToIdeal(graph,partition,mode):
+	"""
+	User friendly version of _correlationToIdeal
 	
-def partitionIntoCorePeriphery(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,core_core=1,core_periphery=0,periphery_periphery=-1):
+	graph: networkx graph
+	partition: dictionary mapping node->{0,1} (0 for periphery, 1 for core)
+	mode: a 3 tuple as described in _correlationToIdeal
+	"""
+	
+	A = nx.convert.to_numpy_matrix(graph)
+	bitPartition = numpy.empty(len(A),dtype=int)
+	for i in xrange(len(graph.nodes())):			
+		bitPartition[i] = partition[graph.nodes()[i]]
+	return _correlationToIdeal(A,bitPartition,mode)
+	
+def findBestPartition(graph,populationSize=100,survivalRate=0.75,maxGenerations=100,mutateVsBreedRate=0.5,quitAfterStable=0.1,core_core=1,core_periphery=0,periphery_periphery=-1):
 	"""
 	Partitions graph into a core set and a periphery set
 	using a genetic optimizer
 	
 	graph: a networkx graph
-	populationSize, survivalRate,maxGenerations,mutateVsBreedRate: see geneticOptimizer.py
+	populationSize, survivalRate,maxGenerations,mutateVsBreedRate,quitAfterStable: see geneticoptimizer.py
 	
 	returns: a dictionary mapping node->{0,1} (0 for periphery, 1 for core)
 	"""
@@ -118,10 +134,11 @@ def partitionIntoCorePeriphery(graph,populationSize=100,survivalRate=0.75,maxGen
 		partition[node] = best[graph.nodes().index(node)]
 	return partition
 	
-def naiveOptimizer(graph,steps=10000,correlationFunction=_correlationToIdeal):
+def _naiveDicretePartition(graph,steps=10000,correlationFunction=_correlationToIdeal):
 	"""
 	Partitions graph into a core set and a periphery set
 	using the worst optimizer (random explorer). All other methods should outperform this one.
+	Used only for ensuring that discretePartition is working. Will remove in the future.
 	
 	graph: a networkx graph
 	steps: how many solutions to explore
