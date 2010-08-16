@@ -73,7 +73,7 @@ def findAgreementBetween(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,ret
 	"""
 	superclasses = []
 	for trial in trials:
-		for cet in trial.values():
+		for cet in trial:
 			_classify(superclasses,cet,setSimilarityThreshold)
 
 	histogram = map(lambda x: (x[0],len(x[1])),superclasses)
