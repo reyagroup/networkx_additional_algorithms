@@ -48,7 +48,7 @@ class GeneticOptimizer(object):
 		if self.quitAfterStable:
 			numMatches = 0
 			previousScore = None
-			numTrailingScores = int(self.quitAfterStable * self.populationSize)
+			numTrailingScores = int(self.quitAfterStable * len(population[0]))
 		
 		for g in xrange(self.maxGenerations):
 			scores = [(self.getScore(dna),dna) for dna in population]
