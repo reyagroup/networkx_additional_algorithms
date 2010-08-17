@@ -5,7 +5,20 @@
 
 from infomap import findBestPartition
 from ..agreement import findAgreementBetween
-import networkx as nx
+from igraph import Graph as iGraph
+
+def newmanEigenvector(graph):
+	ig = iGraph()
+	ig.add_vertices(len(g)-1)
+	ig.add_edges([(g.nodes().index(edge[0]),g.nodes().index(edge[1])) for edge in g.edges()])
+	res = ig.community_leading_eigenvector()
+
+	part = {}
+	for c in xrange(len(res)):
+		for i in res[c]:
+			part[g.nodes()[i]] = c
+
+	return part
 
 def modularity(graph,partition):
 	modularity = 0.0
@@ -16,7 +29,7 @@ def modularity(graph,partition):
 			if partition[graph.nodes()[i]] == partition[graph.nodes()[j]]:
 				modularity += A[i,j] - float(graph.degree(graph.nodes()[i]) * graph.degree(graph.nodes()[i]))/twoM
 	return (1.0/twoM) * modularity
-	
+
 def repeatedInfomap(graph,numTrials=10,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFullHistogram=False):
 	"""
 	runs the infomap community detection algorithm numTrials times, and returns the "agreement" between the runs
