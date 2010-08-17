@@ -4,11 +4,11 @@
 # Monday August 16th
 
 from infomap import findBestPartition
+from igraph import Graph as igraphGraph
 from ..agreement import findAgreementBetween
-from igraph import Graph as iGraph
 
 def newmanEigenvector(graph):
-	ig = iGraph()
+	ig = igraphGraph.Graph()
 	ig.add_vertices(len(g)-1)
 	ig.add_edges([(g.nodes().index(edge[0]),g.nodes().index(edge[1])) for edge in g.edges()])
 	res = ig.community_leading_eigenvector()
