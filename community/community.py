@@ -5,7 +5,18 @@
 
 from infomap import findBestPartition
 from ..agreement import findAgreementBetween
+import networkx as nx
 
+def modularity(graph,partition):
+	modularity = 0.0
+	A = nx.convert.to_numpy_matrix(graph)
+	twoM = float(graph.number_of_edges())*2
+	for i in xrange(len(A)):
+		for j in xrange(len(A)):
+			if partition[graph.nodes()[i]] == partition[graph.nodes()[j]]:
+				modularity += A[i,j] - float(graph.degree(graph.nodes()[i]) * graph.degree(graph.nodes()[i]))/twoM
+	return (1.0/twoM) * modularity
+	
 def repeatedInfomap(graph,numTrials=10,setSimilarityThreshold=0.8,voteThreshold=0.8,returnFullHistogram=False):
 	"""
 	runs the infomap community detection algorithm numTrials times, and returns the "agreement" between the runs

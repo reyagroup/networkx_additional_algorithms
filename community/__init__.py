@@ -5,3 +5,4 @@
 
 import infomap
 from community import repeatedInfomap
+from community import modularity
