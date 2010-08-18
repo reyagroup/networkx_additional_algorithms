@@ -4,6 +4,7 @@
 # Wednesday August 18th 2010
 
 import networkx as nx
+import csv
 
 def writeDict(dict,file,headerRow=None):
 	"""
@@ -16,6 +17,6 @@ def writeDict(dict,file,headerRow=None):
 
 	writer = csv.writer(file)
 	if headerRow: writer.writerow(headerRow)
-	for k,v in dict:
+	for k,v in dict.iteritems():
 		writer.writerow([k,v])
 	file.close()

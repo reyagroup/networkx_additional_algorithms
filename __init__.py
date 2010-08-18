@@ -6,6 +6,5 @@
 import agreement
 import constraint
 import community
-import coreperiphery
-import geneticoptimizer
+import coreness
 from util import *
