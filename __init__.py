@@ -8,3 +8,4 @@ import constraint
 import community
 import coreperiphery
 import geneticoptimizer
+from util import *
