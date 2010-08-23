@@ -5,4 +5,4 @@ alex@isnotinvain.com	| www.isnotinvain.com
 Friday July 23rd 2010
 """
 
-__all__ = ["agreement","constraint","coreness","community","util"]
+__all__ = ["agreement","constraint","coreness","util"]
