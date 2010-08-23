@@ -1,9 +1,11 @@
-# Alex Levenson
-# nosnevelxela@gmail.com
-# Reya Group
-# Friday July 30th 2010
+"""
+Alex Levenson
+alex@isnotinvain.com	| www.isnotinvain.com
+(c) Reya Group 			| http://www.reyagroup.com
+Friday July 23rd 2010
 
-# Usefull methods for finding set similarity, entries that best represent a list, and agreement between multiple "trials"
+Usefull methods for finding set similarity, entries that best represent a list, and agreement between multiple "trials"
+"""
 
 def tanimoto(a,b):
 	"""

@@ -1,7 +1,9 @@
-# Alex Levenson
-# nosnevelxela@gmail.com
-# Reya Group
-# Wednesday August 18th 2010
+"""
+Alex Levenson
+alex@isnotinvain.com	| www.isnotinvain.com
+(c) Reya Group 			| http://www.reyagroup.com
+Friday July 23rd 2010
+"""
 
 import networkx as nx
 import csv

@@ -1,4 +1,11 @@
-#!nodens-python
+#!/usr/bin/python
+"""
+Alex Levenson
+alex@isnotinvain.com	| www.isnotinvain.com
+(c) Reya Group 			| http://www.reyagroup.com
+Friday July 23rd 2010
+"""
+
 import unittest
 import constraint
 import networkx as nx

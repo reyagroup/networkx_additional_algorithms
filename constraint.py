@@ -1,10 +1,12 @@
-# Alex Levenson
-# nosnevelxela@gmail.com
-# Reya Group
-# Friday July 23rd 2010
+"""
+Alex Levenson
+alex@isnotinvain.com	| www.isnotinvain.com
+(c) Reya Group 			| http://www.reyagroup.com
+Friday July 23rd 2010
 
-# Provies functions for calculating Burt's constraint on nodes in a social network. 
-# See Structural Holes: The Social Structure of Competition By Ronald S. Burt
+Provies functions for calculating Burt's constraint on nodes in a social network. 
+See Structural Holes: The Social Structure of Competition By Ronald S. Burt
+"""
 
 import networkx as nx
 import numpy

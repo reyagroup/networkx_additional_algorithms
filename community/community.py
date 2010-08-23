@@ -1,7 +1,9 @@
-# Alex Levenson
-# nosnevelxela@gmail.com
-# Reya Group
-# Monday August 16th
+"""
+Alex Levenson
+alex@isnotinvain.com	| www.isnotinvain.com
+(c) Reya Group 			| http://www.reyagroup.com
+Friday July 23rd 2010
+"""
 
 from infomap import findBestPartition
 from igraph import Graph as igraphGraph
