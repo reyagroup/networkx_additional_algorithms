@@ -7,6 +7,7 @@ Friday July 23rd 2010
 
 import networkx as nx
 import csv
+import igraph
 
 def writeDict(dict,file,headerRow=None):
 	"""
@@ -37,3 +38,9 @@ def writeList(lyst,file,headerRow=None):
 	for row in lyst:
 		writer.writerow(row)
 	file.close()
+	
+def nxToIgraph(graph,directed=None):
+	ig = igraph.Graph(directed=directed)
+	ig.add_vertices(len(graph)-1)
+	ig.add_edges([(g.nodes().index(edge[0]),g.nodes().index(edge[1])) for edge in g.edges()])
+	return ig
