@@ -45,8 +45,9 @@ def getBrokerageRoles(graph,partition):
 	for node in graph:
 		for successor in graph.successors(node):
 			for predecessor in graph.predecessors(node):
-				if successor == predecessor: continue
-				if not (graph.has_edge(predecessor, successor) or graph.has_edge(successor, predecessor)):
+				if successor == predecessor or successor == node or predecessor == node: continue
+				#if not (graph.has_edge(predecessor, successor)) or graph.has_edge(successor, predecessor)):
+				if not (graph.has_edge(predecessor, successor)):
 					# found a broker!
 					# now which kind depends on who is in which group
 					roles[node][roleClassifier.classify(partition[predecessor],partition[node],partition[successor])] += 1
