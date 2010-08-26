@@ -15,6 +15,7 @@ import coreness
 import brokerage
 import cPickle
 import itertools
+from scipy.stats.stats import pearsonr
 
 class TestAdditionalAlgorithms(unittest.TestCase):
 		
@@ -60,7 +61,18 @@ class TestAdditionalAlgorithms(unittest.TestCase):
 				for k,v in cIndexes.iteritems():
 					self.assertAlmostEqual(v,shouldBe[k], msg=msg)
 
+	def test_coreness(self):
+		f = open("unit_test_data/bkoff_coreness.pickle","r")
+		shouldBe = cPickle.load(f)
+		shouldBe = [shouldBe[i] for i in sorted(shouldBe.keys())]
+		f.close()
+		
+		cness = coreness.getCoreness(self.directed)
+		cness = [cness[i] for i in sorted(cness.keys())]
+		r = pearsonr(cness,shouldBe)[0]
+		msg = "Correlation between calculated coreness and correct coreness is too low (" + str(r) + ")"
+		self.assert_(r>0.99,msg=msg)
+		
+		
 if __name__ == '__main__':
 	unittest.main()
-
-
