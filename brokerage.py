@@ -41,7 +41,6 @@ def getBrokerageRoles(graph,partition):
 	roleClassifier = _RoleClassifier()
 	
 	roles = dict((node, dict((role,0) for role in roleClassifier.roleTypes)) for node in graph)
-	
 	for node in graph:
 		for successor in graph.successors(node):
 			for predecessor in graph.predecessors(node):
