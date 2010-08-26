@@ -31,18 +31,18 @@ def _coreFitness(C,*args):
 	"""
 	return coreCorrelation(args[0],C)[0] * -1.0
 
-def getCoreness(graph):
+def getCoreness(graph,returnCorrelation=False):
 	"""
 	Calculates each node's 'coreness'
-	returns: a dictionary mapping node->coreness, the final correlation to the ideal core/periphery model
+	returns: a dictionary mapping node->coreness, and the final correlation to the ideal core/periphery model
+	if returnCorrelation is True
 	"""
 	A = nx.convert.to_numpy_matrix(graph)
 	initialC = numpy.random.rand(len(A)) # can we do better? Is it important? Maybe use constraint or centrality? 
-	best = optimize.fmin_l_bfgs_b(_coreFitness, initialC,args=(A,None),approx_grad=True,bounds=[(0.0,1.0) for i in xrange(len(A))])
-	print best
-	
+	best = optimize.fmin_l_bfgs_b(_coreFitness, initialC,args=(A,None),approx_grad=True,bounds=[(0.0,1.0) for i in xrange(len(A))])	
 	part = {}
 	for node in graph:
 		part[node] = best[0][graph.nodes().index(node)]
-	
-	return part,best[1] * -1.0
+	if returnCorrelation: 
+		return part,best[1] * -1.0
+	return part

@@ -23,6 +23,17 @@ def writeDict(dict,file,headerRow=None):
 	for k,v in dict.iteritems():
 		writer.writerow([k,v])
 	file.close()
+
+def writeNestedDict(dict,file,headerRow):
+	file = nx.utils._get_fh(file, mode='w')
+
+	writer = csv.writer(file)
+	writer.writerow(headerRow)
+	for k,d in dict.iteritems():
+		row = [k]
+		row.extend([d[prop] for prop in headerRow[1:]])
+		writer.writerow(row)
+	file.close()
 	
 def writeList(lyst,file,headerRow=None):
 	"""

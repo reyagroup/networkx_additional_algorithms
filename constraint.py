@@ -72,6 +72,11 @@ def getConstraints(graph,includeOutLinks=True,includeInLinks=False,wholeNetwork=
 	includeOutLinks: whether each ego network should include nodes which the ego points to - this should be True for undirected graphs
 	wholeNetwork: whether to use the whole ego network for each node, or only the overlap between the current ego's network and the other's ego network
 	"""
+	
+	if not hasattr(graph,"predecessors"):
+		print "graph is undirected... setting includeOutLinks to True and includeInLinks to False"
+		includeOutLinks = True
+		includeInLinks = False
 		
 	# get the adjacency matrix view of the graph
 	# which is a numpy matrix
