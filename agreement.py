@@ -85,7 +85,7 @@ def findAgreementBetween(trials,setSimilarityThreshold=0.8,voteThreshold=0.8,ret
 		l = float(len(trials))
 		for cet in xrange(len(histogram)):
 			if (histogram[cet][1] / l) < voteThreshold: break
-		del histogram[cet:]
+		del histogram[cet+1:]
 		return map(lambda x: x[0],histogram)
 	
 	return histogram
