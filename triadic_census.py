@@ -29,4 +29,7 @@ def getTriadicCensus(graph):
 				if ui<wi or(vi<wi and wi<ui and not v in graph.predecessors(w) and not v in graph.successors(w)):
 					code = _tricode(graph,v,u,w)
 					count[TRICODE_TO_NAME[code]] +=1
+			
+	n = len(graph)
+	count["003"] = ((n * (n-1) * (n-2)) / 6) - sum(count.values())
 	return count
