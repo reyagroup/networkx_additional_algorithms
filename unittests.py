@@ -1,5 +1,3 @@
-#!nodens-python
-#!/usr/bin/python
 """
 Alex Levenson
 alex@isnotinvain.com	| www.isnotinvain.com
